@@ -7,7 +7,7 @@ PKG_RELEASE:=1-beta
 PKG_SOURCE_URL:=https://codeload.github.com/bluewavenet/fadecandyserver/tar.gz/v$(PKG_VERSION)?
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 #PKG_HASH:= #shasum -a 256 of tar.gz of source files goes here
-PKG_HASH:= e2e66367a1e25a580ce085c8ebfd80467158a6b6fb162e1aee4863108ba0f7f6
+PKG_HASH:= 39b3dd49cbf61c29689d35d0479afd96ceb2719f718cc8c8261ff3c3ed2df681
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 PKG_MAINTAINER:=Rob White <rob@blue-wave.net>
