@@ -1,0 +1,9 @@
+fadecandyserver (2.1.05)
+
+  * Initial import from github.com/scanlime/fadecandy  [bluewavenet]
+  * Use Semantic Versioning  [bluewavenet]
+  * v2.1.05 equivalent to v1.05 in previous versioning  [bluewavenet]
+  * Additions to support OpenWrt Package Build System  [bluewavenet]
+
+ --Rob White <rob@blue-wave.net> Tue, 05 May 2019 22:37:00 +0000
+
