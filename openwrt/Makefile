@@ -7,7 +7,7 @@ PKG_RELEASE:=1
 PKG_SOURCE_URL:=https://codeload.github.com/bluewavenet/fadecandyserver/tar.gz/v$(PKG_VERSION)?
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 #PKG_HASH:= #shasum -a 256 of tar.gz of source files goes here
-PKG_HASH:= d32dedf2508cb1867d72d424e9cc7da4ee47de431462c3660740b97fd352e618
+PKG_HASH:= 082fbeaed40fd23afba4abfabde8a6c31809508866bf3b05cb50578606828908
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 PKG_MAINTAINER:=Rob White <rob@blue-wave.net>
@@ -45,8 +45,10 @@ define Package/fadecandyserver/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_DIR) $(1)/etc
 	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fcserver $(1)/usr/bin/
-	$(CP) $(PKG_BUILD_DIR)/openwrt/etc/init.d/fcserver $(1)/etc/init.d/
+	$(CP) $(PKG_BUILD_DIR)/openwrt/etc/init.d/fadecandyserver $(1)/etc/init.d/
+	$(CP) $(PKG_BUILD_DIR)/openwrt/etc/config/fadecandyserver $(1)/etc/config/
 endef
 
 define Package/fadecandyserver/postinst
