@@ -47,7 +47,7 @@ define Package/fadecandyserver/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fcserver $(1)/usr/bin/
-	$(CP) $(PKG_BUILD_DIR)/openwrt/etc/init.d/fadecandyserver $(1)/etc/init.d/
+	$(CP) $(PKG_BUILD_DIR)/openwrt/etc/initd/fadecandyserver $(1)/etc/init.d/
 	$(CP) $(PKG_BUILD_DIR)/openwrt/etc/config/fadecandyserver $(1)/etc/config/
 endef
 
