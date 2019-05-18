@@ -1,0 +1,262 @@
+#!/bin/sh /etc/rc.common
+
+#
+# Startup/shutdown script for fadecandyserver handling USB
+# communications with one or more Fadecandy Controller boards.
+#
+USE_PROCD=1
+START=95
+STOP=01
+cfg=fadecandyserver
+
+start_service() {
+	mkdir -p /tmp/etc/fcserver/
+	echo "Starting FadeCandy Server"
+	enabled=$(uci -q get fadecandyserver.fcserver.enabled)
+
+	if [ "$enabled" == "" ]; then
+		enabled=1
+	fi
+
+	if [ $enabled -eq 1 ]; then
+		configfile=$(uci -q get fadecandyserver.fcserver.config)
+
+		if [ "$configfile" == "" ]; then
+			configfile="/tmp/etc/fcserver/config.json"
+			build_config
+		else
+			if [ -f $configfile ]; then
+				echo "Warning: Deprecated - Using legacy config file $configfile"
+			else
+				echo "Legacy Config file $configfile does not exist - exiting.."
+				return 0
+			fi
+		fi
+		procd_open_instance $cfg
+		procd_set_param command /usr/bin/fcserver $configfile
+		procd_set_param respawn
+		procd_set_param file $configfile
+		procd_set_param stdout 1
+		procd_set_param stderr 1
+		procd_close_instance
+	else
+		echo "FadeCandy Server is disabled: Exiting"
+		return 0
+	fi
+}
+
+stop_service() {
+	# When procd terminates fadecandyserver, it might not exit fast enough.
+	# So wait a little bit
+	sleep 1
+}
+
+build_config() {
+
+	header="{\n"
+	footer="}"
+
+	get_config() {
+		local opt=$1
+		local ucistr="uci -q get fadecandyserver"
+		retval=$($ucistr"."$opt)
+	}
+
+	# listen
+	get_config "fcserver.listen_ip"
+	if [ "$retval" == "" ]; then
+		listen_ip="0.0.0.0"
+	else
+		listen_ip=$retval
+	fi
+	get_config "fcserver.listen_port"
+	if [ "$retval" == "" ]; then
+		listen_port="7890"
+	else
+		listen_port=$retval
+	fi
+	listen="\"listen\": [\"$listen_ip\", $listen_port],"
+
+	# relay
+	get_config "fcserver.relay_ip"
+	relay_ip=$retval
+	get_config "fcserver.relay_port"
+	relay_port=$retval
+	if [ "$relay_ip" == "" ] || [ "$relay_port" == "" ]; then
+		relay=""
+	else
+		relay="\"relay\": [\"$relay_ip\", $relay_port],\n\t"
+	fi
+
+	# verbose
+	get_config "fcserver.verbose"
+	if [ "$retval" == "false" ]; then
+		verbosity="false"
+	else
+		verbosity="true"
+	fi
+	verbose="\"verbose\": $verbosity,"
+
+	color="\"color\": {"
+
+	# gamma
+	get_config "color.gamma"
+	if [ "$retval" == "" ]; then
+		gammastr="2.5"
+	else
+		gammastr=$retval
+	fi
+	gamma="\"gamma\": $gammastr,"
+
+	#whitepoint
+	get_config "color.whitepoint"
+	if [ "$retval" == "" ]; then
+		whitepointstr="[ 1.0, 1.0, 1.0 ],"
+	else
+		whitepointstr="[ $retval ],"
+	fi
+	whitepoint="\"whitepoint\": $whitepointstr"
+
+	# linearSlope
+	get_config "color.linearSlope"
+	if [ "$retval" == "" ]; then
+		linearSlopestr="1.0"
+	else
+		linearSlopestr=$retval
+	fi
+	linearSlope="\"linearSlope\": $linearSlopestr,"
+
+	# linearCutoff
+	get_config "color.linearCutoff"
+	if [ "$retval" == "" ]; then
+		linearCutoffstr="0.0"
+	else
+		linearCutoffstr=$retval
+	fi
+	linearCutoff="\"linearCutoff\": $linearCutoffstr"
+
+	# Construct server json
+	server="$header\t$listen\n\t$relay$verbose\n\t$color\n\t\t$gamma\
+		\n\t\t$whitepoint\n\t\t$linearSlope\n\t\t$linearCutoff\n\t},\n"
+
+	# Devices
+	dheader="\t\"devices\": [\n"
+	dfooter="\t]\n"
+
+	# Parse for devices
+	count=0
+	d=0
+	dmap=""
+
+	while [ "$(uci -q get fadecandyserver.@device[$count])" == "device" ]; do
+		count=$((count+1))
+	done
+
+	while [ "$(uci -q get fadecandyserver.@device[$d])" == "device" ]; do
+
+		# Type
+		type=$(uci -q get fadecandyserver.@device[$d].type)
+		if [ "$type" == "" ]; then
+			type="fadecandy"
+		fi
+		type="\t\t{\n\t\t\t\"type\": \"$type\",\n"
+
+		# Name
+		name=$(uci -q get fadecandyserver.@device[$d].name)
+		if [ "$name" != "" ]; then
+			name="\t\t\t\"name\": \"$name\",\n"
+		fi
+
+		# Serial Number
+		serial=$(uci -q get fadecandyserver.@device[$d].serial)
+		if [ "$serial" != "" ]; then
+			serial="\t\t\t\"serial\": \"$serial\",\n"
+		fi
+
+		# Device specific settings
+		settings=$(uci -q get fadecandyserver.@device[$d].setting)
+
+		i=1
+		devset=""
+		scount=1
+
+		while [ "$(echo $settings | awk -v j=$scount -F "' '" '{print $j}')" != "" ]; do
+			scount=$((scount+1))
+		done
+
+		while [ $i -le $scount ];do
+			setting=$(echo $settings | awk -v i=$i -F "' '" '{print $i}' | tr -d "'")
+			if [ "$setting" != "" ]; then
+				nam=$(echo $setting | awk -F ", " '{print $1}')
+				parm=$(echo $setting | awk -F ", " '{print $2}')
+				devset=$devset"\t\t\t\"$nam\": $parm,\n"			
+			fi
+			i=$((i+1))
+		done
+
+		# Maps
+		mapconf="\t\t\t\"map\": [\n"
+		devmap=$(uci -q get fadecandyserver.@device[$d].map)
+		if [ "$devmap" == "" ]; then
+			devmap="*, 0, 0, 0, 512, \"rgb\""
+		fi
+
+		mcount=1
+
+		while [ "$(echo $devmap | awk -v j=$mcount -F "' '" '{print $j}')" != "" ]; do
+			mcount=$((mcount+1))
+		done
+
+		i=1
+
+		while [ $i -le $mcount ];do
+			mapobj=$(echo $devmap | awk -v i=$i -F "' '" '{print $i}' | tr -d "'")
+
+			if [ "$mapobj" != "" ]; then
+				f=2
+				mapjson=""
+				while true; do
+					field=$(echo $mapobj | awk -v j=$f -F ", " '{print $j}')
+
+					if [ "$field" != "" ]; then
+						if [ "$mapjson" == "" ]; then
+							mapjson=$mapjson$field
+						else
+							mapjson=$mapjson", "$field
+						fi
+						f=$((f+1))
+					else
+						break
+					fi
+				done
+				mapjson="[ $mapjson ]"
+	
+				if [ $i -eq $(($mcount-1)) ]; then
+					mapconf="$mapconf\t\t\t\t$mapjson\n"
+				else
+					mapconf="$mapconf\t\t\t\t$mapjson,\n"
+				fi
+			fi
+			i=$((i+1))
+		done
+
+
+
+		# increment counter and add footer for each device
+		d=$((d+1))
+
+		mfooter="\t\t},\n"
+		if [ "$d" == "$count" ]; then
+			mfooter="\t\t}\n"
+		else
+			mfooter="\t\t},\n"
+		fi
+
+		thismap="$type$name$serial$devset$mapconf\t\t\t]\n$mfooter"
+
+		dmap=$dmap$thismap
+	done
+
+	devices=$dheader$dmap$dfooter
+	echo -e $server$devices$footer > /tmp/etc/fcserver/config.json
+}
