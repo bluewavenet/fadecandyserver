@@ -1,0 +1,136 @@
+## The options available here are an adaptation of the settings used in config.json
+## See https://github.com/scanlime/fadecandy/blob/master/doc/fc_server_config.md
+
+config fadecandy fcserver
+
+	## Set to 0 to disable, 1 to enable
+	## Default enabled
+	#option enabled 1
+
+	## Use legacy configuration file
+	## fcserver.config is deprecated and no longer included in the package
+	## Default disabled
+	#option config '/etc/fcserver.config'
+
+	## Set the IPv4 address that fadecandyserver listens on
+	## Default '0.0.0.0' ie. use the server's host machine address whatever it is. 
+	option listen_ip '0.0.0.0'
+
+	## Set the port address that fadecandyserver listens on
+	## Default is 7890
+	option listen_port '7890'
+
+	## Set up a monitor port
+	## This can be used by a client to monitor all OPC messages the server is processing
+	## relay_ip MUST be the IPv4 address of an OpenWrt interface
+	## or be set to 0.0.0.0 for all interfaces 
+	## Default is not set. 
+	#option relay_ip '0.0.0.0'
+
+	## This can be used by a client to monitor all OPC messages the server is processing
+	## relay_port MUST be different to the value set for listen_port
+	## Default is not set
+	#option relay_port '7891'
+
+	## Set the verbosity mode, true or false
+	## Default true
+	option verbose 'true'
+
+config fadecandy color
+
+	## Set gamma, the exponent for the nonlinear portion of the brightness curve
+	## Default 2.5
+	option gamma '2.5'
+
+	## Set whitepoint, the vector of [red, green, blue] values to multiply by colors prior to gamma correction
+	## Default 1, 1, 1
+	option whitepoint '1.0, 1.0, 1.0'
+
+	## Set linearSlope, the slope (output / input) of the linear section of the brightness curve
+	## Default 1.0
+	option linearSlope '1.0'
+
+	## Set linearCutoff, the Y (output) coordinate of intersection between linear and nonlinear curves
+	option linearCutoff '0.0'
+
+##Add a Fadecandy device
+config device
+
+	## Set type, name, serial number and map for a connected device
+	## For additional devices, create another config device section
+
+	## set the device type
+	## Default fadecandy
+	option type 'fadecandy'
+
+	## Set the name of this device
+	## This is a readable text string to identify a particular device
+	## Default not set
+	option name 'First FadeCandy'
+
+	## Set the serial number of this device
+	## Default not set
+	#option serial 'RXXBQYYSTLABCDEF'
+
+	## Set a device specific setting for this device
+	## Examples for a FadeCandy device:
+	list setting 'led, true'
+	list setting 'dither, true'
+	list setting 'interpolate, true'
+
+	## Set the mapping objects for this device
+	## Default '*, 0, 0, 0, 512, "rgb"'
+	## where "*" can be a string of comment text"
+	## Examples:
+        #list map '12v high power LEDs, 0, 0, 0, 64, "grb"'
+	#list map '5v LED string on west wall, 0, 64, 64, 64, "rgb"'
+	#list map '*, 0, 128, 128, 64, "grb"'
+	#list map '*, 0, 192, 192, 64, "rgb"'
+	#list map '*, 0, 256, 256, 64, "grb"'
+	#list map 'First string in central display, 0, 320, 320, 64, "rgb"'
+	#list map '*, 0, 384, 384, 64, "grb"'
+	#list map '*, 0, 448, 448, 64, "rgb"'
+
+## Add another Fadecandy device; example:
+	
+#config device
+	#option type 'fadecandy'
+	#option name 'Second FadeCandy'
+	#option serial 'HPZZGSIYPJABCDEF'
+	#list setting 'interpolate, true'
+	#list map '*, 0, 512, 0, 64, "grb"'
+	#list map '*, 0, 576, 64, 64, "rgb"'
+	#list map '*, 0, 640, 128, 64, "grb"'
+	#list map 'Last string in central display, 0, 704, 192, 64, "rgb"'
+	#list map '*, 0, 768, 256, 64, "grb"'
+	#list map '*, 0, 832, 320, 64, "rgb"'
+	#list map '*, 0, 896, 384, 64, "grb"'
+	#list map '*, 0, 960, 448, 64, "rgb"'
+
+## Add an Enttec device; example:
+
+#config device
+	#option type 'enttec'
+	#option name 'First Enttec'
+	#option serial 'EN12345'
+
+	#list map '*, 0, 6048, "r", 1'
+	#list map '*, 0, 6048, "g", 2'
+	#list map '*, 0, 6048, "b", 3'
+	#list map '*, 0, 6049, "l", 4'
+
+	#list map '*, 0, 6050, "r", 5'
+	#list map '*, 0, 6050, "g", 6'
+	#list map '*, 0, 6050, "b", 7'
+	#list map '*, 0, 6051, "l", 8'
+
+	#list map '*, 0, 6052, "r", 9'
+	#list map '*, 0, 6052, "g", 10'
+	#list map '*, 0, 6052, "b", 11'
+	#list map '*, 0, 6053, "l", 12'
+
+	#list map '*, 0, 6054, "r", 13'
+	#list map '*, 0, 6054, "g", 14'
+	#list map '*, 0, 6054, "b", 15'
+	#list map '*, 0, 6055, "l", 16'
+
