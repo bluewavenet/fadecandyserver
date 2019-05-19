@@ -18,8 +18,8 @@ PKG_LICENSE:=MIT
 include $(INCLUDE_DIR)/package.mk
 
 define Package/fadecandyserver
-	SECTION:=utils
-	CATEGORY:=Utilities
+	SECTION:=multimedia
+	CATEGORY:=multimedia
 	TITLE:=FadeCandy Server
 	URL:=https://github.com/scanlime/fadecandy
 	DEPENDS:=+libpthread +librt +uclibcxx +libstdcpp +libc 
