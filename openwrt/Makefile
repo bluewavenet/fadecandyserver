@@ -21,15 +21,16 @@ define Package/fadecandyserver
 	SECTION:=multimedia
 	CATEGORY:=multimedia
 	TITLE:=FadeCandy Server
-	URL:=https://github.com/scanlime/fadecandy
-	DEPENDS:=+libpthread +librt +uclibcxx +libstdcpp +libc 
+	URL:=https://github.com/bluewavenet/fadecandyserver
+	DEPENDS:=+libpthread +librt +libstdcpp
 endef
 
 define Package/fadecandyserver/description
 	FadeCandy Server For OpenWrt.
 	The Fadecandy Server is a background process that handles
 	USB communications with Fadecandy LED Controller boards.
-	Pixel data can be sent to a Fadecandy Server over the Open Pixel Control protocol,
+	Pixel data can be sent to a Controller board using
+	Open Pixel Control protocol over the network
 	or from a web app via WebSockets.
 
 	* Support multiple Fadecandy boards
@@ -37,7 +38,15 @@ define Package/fadecandyserver/description
 	* Listen on a configurable TCP port
 	* Listen for connections from the network, not just from local programs
 
-	This package contains the FadeCandy fcserver utility. 
+	This package contains the fadecandyserver utility.
+	It was derived originally from the codebase of the FadeCandy project.
+endef
+
+define Build/Compile
+	$(MAKE) -C $(PKG_BUILD_DIR)/ \
+		CXX=$(TARGET_CC) \
+		CC="$(TARGET_CC) -fhonour-copts" \
+		STRIP_CMD="$(TARGET_STRIP) $(TARGET)"
 endef
 
 define Package/fadecandyserver/install
