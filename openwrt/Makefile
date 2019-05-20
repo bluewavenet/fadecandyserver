@@ -19,7 +19,7 @@ include $(INCLUDE_DIR)/package.mk
 
 define Package/fadecandyserver
 	SECTION:=multimedia
-	CATEGORY:=multimedia
+	CATEGORY:=Multimedia
 	TITLE:=FadeCandy Server
 	URL:=https://github.com/bluewavenet/fadecandyserver
 	DEPENDS:=+libpthread +librt +libstdcpp
